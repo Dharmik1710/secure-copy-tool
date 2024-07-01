@@ -1,0 +1,143 @@
+*********************************************************************
+Name : Dharmik Patel
+
+_____________________________________________________________________
+Submitted source files:
+1. purenc.c - encrypt in network as well as local mode
+2. purdec.c - decrypt in network as well as local mode
+3. README
+4. Makefile
+_____________________________________________________________________
+
+
+_____________________________________________________________________
+An answer to the following question: There will be a particular decision you’ll need to make for dealing with PBKDF2. What extra input does it require and why is this used? How does your program deal with it?
+
+1. PBKDF2 function requires salt as an additional input
+2. Salt of 32 bytes which is equal to the key size for better security is generated randomly using `gcry_randomize` function
+3. Salt is required because for password based authentication, the password length is ususally shorter than key size and to make our key more secure and random, we make use of salt.
+_____________________________________________________________________
+
+
+_____________________________________________________________________
+General comments and design decisions made, as well as anything else that can help us grade your code.
+
+I have given required comments in code.
+_____________________________________________________________________
+
+
+_____________________________________________________________________
+Number of hours spent on the project and level of effort required.
+
+I developed the code from scratch. Most of the effort went into debugging.
+_____________________________________________________________________
+
+*********************************************************************
+
+
+
+
+
+Encryption Algorithm Used : AES 256
+Encryption Mode used : CBC
+MAC : HMAC - SHA256
+
+
+
+
+
+------------------------------------------------------------------
+My format of sending data over the network
+------------------------------------------------------------------
+File name size(1 char) - File that is to be encrypted.
+File name(max length 1 bytes) - file name of the encrypted file
+Salt(32 bytes) - Recommended equal to the keysize for security reasons
+
+The entire file is divided into chunks of size 1024 bytes each.
+I have divided the file into chunks so that my program can handle any file size(even GB)
+
+I have used TCP connection for the network mode because of its reliability.
+
+Each chunk will be futher sent as 
+Chunk size(4B) - (len(hmac)+len(iv)+len(enc_data))
+HMAC (32B) - HMAC - SHA3 - 256 is used
+IV(16B) - Please note to get secure file transfer, I have chosen to use different IV for each chunk
+Data(rest of the bytes) 
+
+------------------------------------------------------------------
+For local mode all the relevant information is stored in a file
+------------------------------------------------------------------
+
+------------------------------------------------------------------
+Here's a list of APIs and functions used in the program:
+------------------------------------------------------------------
+
+1. `gcry_mac_get_algo_maclen`: Retrieves the length of the MAC (Message Authentication Code) for a specified algorithm.
+
+2. `parseArguments`: Parses command-line arguments to extract input file, destination address, port, and local mode information.
+
+3. `file_exists`: Checks if a file exists in the file system.
+
+4. `add_data_to_file`: Writes data to a file.
+
+5. `add_data_to_file_int`: Writes an integer to a file.
+
+6. `setPassphrase`: Gets a passphrase from the user.
+
+7. `print_buffer`: Prints the contents of a buffer in hexadecimal format.
+
+8. `print_n_chars`: Prints the first n characters of a string.
+
+9. `deriveKey`: Derives a key from a passphrase using PBKDF2 (Password-Based Key Derivation Function 2).
+
+10. `pad`: Adds padding to a buffer to meet a specified block size.
+
+11. `tcp_connect`: Establishes a TCP connection with a specified IP address and port.
+
+12. `send_data_over_tcp_buffer`: Sends data over a TCP connection using a buffer.
+
+13. `send_data_over_tcp_int`: Sends an integer over a TCP connection.
+
+14. `send_data_over_tcp_char`: Sends a character over a TCP connection.
+
+15. `set_hmac_context`: Initializes an HMAC (Hash-based Message Authentication Code) context with a specified key.
+
+16. `compute_hmac`: Computes an HMAC for a given buffer using a specified HMAC context.
+
+17. `my_encrypt`: Performs encryption using AES256 in CBC (Cipher Block Chaining) mode with HMAC-SHA3-256 for authentication.
+
+18. `gcry_cipher_open`: Creates a cipher context handle for encryption.
+
+19. `gcry_cipher_setkey`: Sets the encryption key for a cipher context.
+
+20. `gcry_cipher_setiv`: Sets the initialization vector (IV) for a cipher context.
+
+21. `gcry_cipher_encrypt`: Encrypts data using a cipher context.
+
+22. `gcry_mac_open`: Creates an HMAC context handle.
+
+23. `gcry_mac_setkey`: Sets the key for an HMAC context.
+
+24. `gcry_mac_write`: Updates the HMAC with additional data.
+
+25. `gcry_mac_read`: Retrieves the computed HMAC.
+
+26. `fclose`: Closes a file.
+
+27. `gcry_mac_close`: Frees resources associated with an HMAC context.
+
+28. `gcry_cipher_close`: Frees resources associated with a cipher context.
+
+
+
+------------------------------------------------------------------
+References:
+------------------------------------------------------------------
+1. https://www.gnupg.org/documentation/manuals/gcrypt.pdf
+2. https://crypto.stackexchange.com/questions/66387/what-is-a-good-aes-mode-to-use-on-file-encryption#:~:text=You%20can%20use%20CBC%20mode,encryption%20mode%20as%20AES%2DGCM.
+3. https://stackoverflow.com/questions/1220751/how-to-choose-an-aes-encryption-mode-cbc-ecb-ctr-ocb-cfb
+4. https://stackoverflow.com/questions/32445699/encrypting-decrypting-files-libgcrypt
+5. https://stackoverflow.com/questions/14583733/key-derivation-using-libgcrypt-in-c
+6. https://www.researchgate.net/post/Is_there_any_interference_if_a_same_symmetric_key_to_perform_AES_encryption_and_HMAC_generation#:~:text=No%2C%20there%20is%20no%20interference,is%20used%20to%20authenticate%20data.
+7. https://security.stackexchange.com/questions/93030/does-using-the-same-secret-key-for-aes-256-cbc-and-hmac-sha512-in-encrypt-then-m
+
